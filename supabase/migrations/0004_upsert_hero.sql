@@ -55,21 +55,25 @@ begin
 
   delete from hero_classes where hero_id = hid;
   insert into hero_classes (hero_id, class_id)
-  select hid, v::bigint from jsonb_array_elements_text(coalesce(p->'class_ids','[]'::jsonb)) v;
+  select hid, v::bigint from jsonb_array_elements_text(coalesce(p->'class_ids','[]'::jsonb)) v
+  on conflict (hero_id, class_id) do nothing;
 
   delete from hero_factions where hero_id = hid;
   insert into hero_factions (hero_id, faction_id)
-  select hid, v::bigint from jsonb_array_elements_text(coalesce(p->'faction_ids','[]'::jsonb)) v;
+  select hid, v::bigint from jsonb_array_elements_text(coalesce(p->'faction_ids','[]'::jsonb)) v
+  on conflict (hero_id, faction_id) do nothing;
 
   delete from hero_labels where hero_id = hid;
   insert into hero_labels (hero_id, ordinal, label_en, label_pt)
   select hid, ordinal, label_en, label_pt
-  from jsonb_to_recordset(coalesce(p->'labels','[]'::jsonb)) as x(ordinal int, label_en text, label_pt text);
+  from jsonb_to_recordset(coalesce(p->'labels','[]'::jsonb)) as x(ordinal int, label_en text, label_pt text)
+  on conflict (hero_id, ordinal) do nothing;
 
   delete from hero_dungeon_rates where hero_id = hid;
   insert into hero_dungeon_rates (hero_id, dungeon_id, rate)
   select hid, dungeon_id, rate
-  from jsonb_to_recordset(coalesce(p->'rates','[]'::jsonb)) as x(dungeon_id bigint, rate numeric);
+  from jsonb_to_recordset(coalesce(p->'rates','[]'::jsonb)) as x(dungeon_id bigint, rate numeric)
+  on conflict (hero_id, dungeon_id) do nothing;
 
   insert into hero_gear (hero_id, gear) values (hid, coalesce(p->'gear','[]'::jsonb))
   on conflict (hero_id) do update set gear = excluded.gear;
