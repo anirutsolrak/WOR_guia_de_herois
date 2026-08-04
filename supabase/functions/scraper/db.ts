@@ -48,30 +48,22 @@ export interface PersistArgs {
   gear: GearSlotOut[]; artifacts: ArtifactOut[]; lineups: LineupOut[]; videos: unknown[];
 }
 
-export async function persist(sb: SupabaseClient, a: PersistArgs): Promise<void> {
-  const up = async (table: string, rows: any[], onConflict: string) => {
-    if (rows.length) { const { error } = await sb.from(table).upsert(rows, { onConflict }); if (error) throw error; }
+export function buildPayload(a: PersistArgs) {
+  return {
+    hero: a.hero,
+    refs: a.refs,
+    class_ids: a.classIds,
+    faction_ids: a.factionIds,
+    labels: a.labels,
+    rates: a.rates,
+    gear: a.gear,
+    artifacts: a.artifacts,
+    lineups: a.lineups,
+    videos: a.videos,
   };
-  await up('dungeons', a.refs.dungeons, 'id');
-  await up('classes', a.refs.classes, 'id');
-  await up('factions', a.refs.factions, 'id');
-  await up('equipment_slots', a.refs.slots, 'id');
-  await up('attributes', a.refs.attributes, 'attr_id');
-  await up('equipment_sets', a.refs.sets, 'id');
-  await up('artifacts', a.refs.artifacts, 'id');
+}
 
-  { const { error } = await sb.from('heroes').upsert(a.hero, { onConflict: 'id' }); if (error) throw error; }
-  const hid = a.hero.id;
-  await sb.from('hero_classes').delete().eq('hero_id', hid);
-  await up('hero_classes', a.classIds.map((c) => ({ hero_id: hid, class_id: c })), 'hero_id,class_id');
-  await sb.from('hero_factions').delete().eq('hero_id', hid);
-  await up('hero_factions', a.factionIds.map((f) => ({ hero_id: hid, faction_id: f })), 'hero_id,faction_id');
-  await sb.from('hero_labels').delete().eq('hero_id', hid);
-  await up('hero_labels', a.labels.map((l) => ({ hero_id: hid, ...l })), 'hero_id,ordinal');
-  await sb.from('hero_dungeon_rates').delete().eq('hero_id', hid);
-  await up('hero_dungeon_rates', a.rates.map((r) => ({ hero_id: hid, ...r })), 'hero_id,dungeon_id');
-  await up('hero_gear', [{ hero_id: hid, gear: a.gear }], 'hero_id');
-  await up('hero_artifacts', [{ hero_id: hid, artifacts: a.artifacts }], 'hero_id');
-  await up('hero_lineups', [{ hero_id: hid, lineups: a.lineups }], 'hero_id');
-  await up('hero_videos', [{ hero_id: hid, videos: a.videos }], 'hero_id');
+export async function persist(sb: SupabaseClient, a: PersistArgs): Promise<void> {
+  const { error } = await sb.rpc('upsert_hero', { p: buildPayload(a) });
+  if (error) throw error;
 }

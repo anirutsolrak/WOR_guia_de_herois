@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import { localizeRefs, buildHeroRow } from './db.ts';
+import { localizeRefs, buildHeroRow, buildPayload } from './db.ts';
 import { parseDetail } from './transform.ts';
 
 const t = async (s: string) => 'PT:' + s;
@@ -29,4 +29,21 @@ Deno.test('buildHeroRow monta a linha de heroes', () => {
   assertEquals(row.name_pt, 'Lu Bu');
   assertEquals(row.special_pt, 'domina...');
   assertEquals(row.card_url, 'c.png');
+});
+
+Deno.test('buildPayload monta o payload da RPC', () => {
+  const p = buildPayload({
+    hero: { id: 1, name_en: 'Lu Bu', name_pt: 'Lu Bu', is_lord: false, source_raw: {} } as any,
+    refs: { dungeons: [{ id: 30, name_en: 'X', name_pt: 'PT:X' }] } as any,
+    classIds: [10], factionIds: [20],
+    labels: [{ ordinal: 0, label_en: 'AoE DPS', label_pt: 'DPS em Área' }],
+    rates: [{ dungeon_id: 30, rate: 50 }],
+    gear: [], artifacts: [], lineups: [], videos: [],
+  });
+  // camelCase -> snake_case remap for the SQL function
+  // (class_ids/faction_ids), passthrough for the rest
+  if (JSON.stringify(p.class_ids) !== '[10]') throw new Error('class_ids');
+  if (JSON.stringify(p.faction_ids) !== '[20]') throw new Error('faction_ids');
+  if ((p.rates as any)[0].dungeon_id !== 30) throw new Error('rates');
+  if ((p.refs as any).dungeons[0].name_pt !== 'PT:X') throw new Error('refs');
 });
