@@ -82,3 +82,58 @@ export function collectRefs(d: DetailData): Refs {
   }
   return r;
 }
+
+export type T = (en: string) => Promise<string>;
+
+export interface GearSlotOut {
+  slot: { id: number; name: string; icon_url?: string };
+  sets: { id: number; name: string; desc: string; icon_url?: string; equipment_icon?: string }[];
+  main_attrs: { attr_id: number; name: string; icon_url?: string }[];
+  sub_attrs: { attr_id: number; name: string; icon_url?: string }[];
+}
+export interface ArtifactOut { id: number; name: string; desc: string; icon_url?: string; quality?: string }
+export interface LineupOut { heroes: { id: number; name: string; card_url?: string }[] }
+
+function systemGroup(list: any[] | undefined) {
+  return (list ?? []).find((g) => g.type === 3);
+}
+
+export async function buildGear(d: DetailData, t: T): Promise<GearSlotOut[]> {
+  const grp = systemGroup(d.equipment_list);
+  const out: GearSlotOut[] = [];
+  for (const slot of grp?.list ?? []) {
+    const sets: GearSlotOut['sets'] = [];
+    for (const opt of slot.list ?? []) {
+      const s = opt.equipment?.set;
+      if (s) sets.push({ id: s.id, name: await t(s.name ?? ''), desc: await t(s.desc ?? ''), icon_url: s.icon, equipment_icon: opt.equipment?.icon });
+    }
+    const mapAttr = async (a: any) => ({ attr_id: a.attr_id, name: await t(a.name ?? ''), icon_url: a.icon });
+    out.push({
+      slot: { id: slot.equipment_slot.id, name: await t(slot.equipment_slot.name ?? ''), icon_url: slot.equipment_slot.icon },
+      sets,
+      main_attrs: await Promise.all((slot.main_attrs ?? []).map(mapAttr)),
+      sub_attrs: await Promise.all((slot.sub_attrs ?? []).map(mapAttr)),
+    });
+  }
+  return out;
+}
+
+export async function buildArtifacts(d: DetailData, t: T): Promise<ArtifactOut[]> {
+  const grp = systemGroup(d.artifactItem_list);
+  const out: ArtifactOut[] = [];
+  for (const item of grp?.list ?? []) {
+    const a = item.artifact;
+    if (a) out.push({ id: a.id, name: await t(a.name ?? ''), desc: await t(a.desc ?? ''), icon_url: a.icon, quality: a.quality });
+  }
+  return out;
+}
+
+export async function buildLineups(d: DetailData, t: T): Promise<LineupOut[]> {
+  const out: LineupOut[] = [];
+  for (const lu of d.lineup?.list ?? []) {
+    const heroes = [] as LineupOut['heroes'];
+    for (const h of lu.heroes ?? []) heroes.push({ id: h.id, name: await t(h.name ?? ''), card_url: h.card });
+    out.push({ heroes });
+  }
+  return out;
+}
