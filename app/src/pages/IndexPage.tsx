@@ -41,7 +41,10 @@ export function IndexPage() {
             <section key={cat.key}>
               <SectionHeader label={cat.label} />
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {items.map((d) => <ModeCard key={d.id} dungeon={d} />)}
+                {items
+                  .slice()
+                  .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+                  .map((d) => <ModeCard key={d.id} dungeon={d} />)}
               </div>
             </section>
           );

@@ -34,6 +34,7 @@ export function AppShell({
                 value={search ?? ''}
                 onChange={(e) => onSearch(e.target.value)}
                 placeholder="Buscar modo…"
+                aria-label="Buscar modo"
                 className="w-full bg-transparent text-fg placeholder:text-subtle focus:outline-none"
               />
             </div>

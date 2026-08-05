@@ -7,10 +7,10 @@ const dungeon = { id: 30, index: 12, name_pt: 'Guerra de Guilda', name_en: 'Guil
 
 describe('ModeCard', () => {
   it('linka para /modo/:id e mostra nome PT + imagem', () => {
-    render(<MemoryRouter><ModeCard dungeon={dungeon} /></MemoryRouter>);
+    const { container } = render(<MemoryRouter><ModeCard dungeon={dungeon} /></MemoryRouter>);
     const link = screen.getByRole('link', { name: /Guerra de Guilda/i });
     expect(link).toHaveAttribute('href', '/modo/30');
-    expect(screen.getByRole('img')).toHaveAttribute('src', 'gw.png');
+    expect(container.querySelector('img')).toHaveAttribute('src', 'gw.png');
     expect(screen.getByText('Guerra de Guilda')).toBeInTheDocument();
   });
   it('usa name_en quando name_pt é nulo', () => {

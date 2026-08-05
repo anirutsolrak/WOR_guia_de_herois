@@ -42,11 +42,6 @@
   --text-muted: #9aa5b8;
   --border: #2a3a55;
   --accent: #4f8cff;
-
-  color-scheme: dark;
-  color: var(--text);
-  background: var(--bg);
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -58,6 +53,11 @@ body {
 }
 
 #root {
+  min-height: 100%;
+}
+
+.mode-page,
+.hero-page {
   max-width: 960px;
   margin: 0 auto;
   padding: 16px;

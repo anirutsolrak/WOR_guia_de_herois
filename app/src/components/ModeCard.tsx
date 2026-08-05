@@ -14,7 +14,7 @@ export function ModeCard({ dungeon }: { dungeon: Dungeon }) {
       {dungeon.icon_url && (
         <img
           src={dungeon.icon_url}
-          alt={name}
+          alt=""
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover opacity-85
                      transition duration-150 group-hover:opacity-100 group-hover:scale-[1.03]"
