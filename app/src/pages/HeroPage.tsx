@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { useHero } from '../hooks/useHero';
 import { useDungeons } from '../hooks/useDungeons';
-import { RadarChart } from '../components/RadarChart';
+import { AppShell } from '../components/AppShell';
+import { HeroIdentity } from '../components/HeroIdentity';
+import { RadarPanel } from '../components/RadarPanel';
 import { GearSlotView } from '../components/GearSlot';
 import { LineupRow } from '../components/LineupRow';
 
@@ -9,50 +11,68 @@ export function HeroPage() {
   const { heroId } = useParams();
   const { data: hero, loading, error } = useHero(Number(heroId));
   const { data: dungeons } = useDungeons();
-  if (loading) return <p>Carregando…</p>;
-  if (error || !hero) return <p>Erro ao carregar herói.</p>;
 
-  const ordered = (dungeons ?? []).slice().sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-  const rateMap = new Map(hero.rates.map((r) => [r.dungeon_id, r.rate]));
-  const values = ordered.map((d) => rateMap.get(d.id) ?? 0);
-  const labels = ordered.map((d) => String(d.index ?? ''));
-  const maxRate = Math.max(50, ...values);
+  if (loading) return <AppShell title="Herói"><p className="text-muted">Carregando…</p></AppShell>;
+  if (error || !hero) return <AppShell title="Herói"><p className="text-muted">Erro ao carregar herói.</p></AppShell>;
+
+  const name = hero.name_pt ?? hero.name_en;
 
   return (
-    <main className="hero-page">
-      <Link to="/">← Modos</Link>
-      <header className="hero-header">
-        {hero.big_card_url && <img className="hero-big" src={hero.big_card_url} alt={hero.name_pt ?? hero.name_en} />}
-        <div>
-          <h1>{hero.name_pt ?? hero.name_en}</h1>
-          <div className="stars">{'★'.repeat(hero.star_level ?? 0)}</div>
-          <div className="labels">{hero.labels.map((l, i) => <span key={i} className="label">{l.label_pt ?? l.label_en}</span>)}</div>
+    <AppShell title={name} subtitle="Detalhe do herói">
+      <Link to="/" className="mb-5 inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface
+                              px-3 py-1.5 text-sm text-muted transition hover:border-accent/50 hover:text-fg">
+        <span aria-hidden className="text-base leading-none">←</span> Voltar
+      </Link>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_1fr]">
+        <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <HeroIdentity hero={hero} />
+          <RadarPanel rates={hero.rates} dungeons={dungeons ?? []} />
         </div>
-      </header>
 
-      {values.length > 0 && (
-        <section><h2>Conteúdos Ideais</h2>
-          <RadarChart values={values} labels={labels} max={maxRate} /></section>
-      )}
+        <div className="space-y-8">
+          <section>
+            <h2 className="mb-3 font-display text-lg font-bold">Equipamento (Recomendado)</h2>
+            <div className="space-y-3">
+              {hero.gear.map((g) => <GearSlotView key={g.slot.id} slot={g} />)}
+            </div>
+          </section>
 
-      <section><h2>Equipamento (Recomendado pelo Sistema)</h2>
-        {hero.gear.map((g) => <GearSlotView key={g.slot.id} slot={g} />)}</section>
+          <section>
+            <h2 className="mb-3 font-display text-lg font-bold">Artefatos</h2>
+            <ul className="space-y-2">
+              {hero.artifacts.map((a) => (
+                <li key={a.id} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
+                  {a.icon_url && <img src={a.icon_url} alt="" className="h-8 w-8" />}
+                  <div>
+                    <div className="text-sm text-fg">{a.name}</div>
+                    <div className="text-xs text-muted">{a.desc}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-      <section><h2>Artefatos</h2>
-        <ul className="artifact-list">
-          {hero.artifacts.map((a) => (
-            <li key={a.id}>{a.icon_url && <img src={a.icon_url} alt="" />}<span>{a.name}</span><span className="desc">{a.desc}</span></li>
-          ))}
-        </ul></section>
+          <section>
+            <h2 className="mb-3 font-display text-lg font-bold">Times Recomendados</h2>
+            <div className="space-y-3">
+              {hero.lineups.map((l, i) => <LineupRow key={i} lineup={l} />)}
+            </div>
+          </section>
 
-      <section><h2>Times Recomendados</h2>
-        {hero.lineups.map((l, i) => <LineupRow key={i} lineup={l} />)}</section>
+          <section>
+            <h2 className="mb-3 font-display text-lg font-bold">Descrição</h2>
+            <p className="leading-relaxed text-muted">{hero.special_pt}</p>
+          </section>
 
-      <section><h2>Descrição</h2><p>{hero.special_pt}</p></section>
-
-      {hero.videos.length > 0 && (
-        <section><h2>Vídeos</h2><p>{hero.videos.length} guia(s) disponível(is)</p></section>
-      )}
-    </main>
+          {hero.videos.length > 0 && (
+            <section>
+              <h2 className="mb-3 font-display text-lg font-bold">Vídeos</h2>
+              <p className="text-muted">{hero.videos.length} guia(s) disponível(is)</p>
+            </section>
+          )}
+        </div>
+      </div>
+    </AppShell>
   );
 }

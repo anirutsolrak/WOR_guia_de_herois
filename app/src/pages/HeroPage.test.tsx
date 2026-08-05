@@ -7,7 +7,10 @@ vi.mock('react-router-dom', async (orig) => ({
   useParams: () => ({ heroId: '1' }),
 }));
 vi.mock('../hooks/useDungeons', () => ({
-  useDungeons: () => ({ data: [{ id: 30, index: 1, name_pt: 'Raide I', name_en: 'Gear Raid I' }], loading: false, error: null }),
+  useDungeons: () => ({
+    data: [{ id: 30, index: 1, name_pt: 'Raide de Equipamento I', name_en: 'Gear Raid I', icon_url: null }],
+    loading: false, error: null,
+  }),
 }));
 vi.mock('../hooks/useHero', () => ({
   useHero: () => ({
@@ -19,17 +22,20 @@ vi.mock('../hooks/useHero', () => ({
       artifacts: [{ id: 70, name: 'Alabarda', desc: 'Área +15%' }],
       lineups: [{ heroes: [{ id: 2, name: 'Elddr', card_url: 'el.png' }] }],
       videos: [],
-    }, loading: false, error: null,
+      classes: [{ title_en: 'Fighter', title_pt: 'Lutador' }],
+      factions: [{ title_en: 'Chaotic', title_pt: 'Caótico' }],
+    },
+    loading: false, error: null,
   }),
 }));
 
 import { HeroPage } from './HeroPage';
 
 describe('HeroPage', () => {
-  it('renderiza cabeçalho, radar, gear, artefato, time e descrição', () => {
+  it('renderiza cabeçalho, identidade, radar, gear, artefato, time e descrição', () => {
     render(<MemoryRouter><HeroPage /></MemoryRouter>);
     expect(screen.getByRole('heading', { name: 'Lu Bu' })).toBeInTheDocument();
-    expect(screen.getByText('DPS em Área')).toBeInTheDocument();
+    expect(screen.getByText('Caótico')).toBeInTheDocument();
     expect(document.querySelector('polygon')).toBeTruthy();
     expect(screen.getByText('Warlord')).toBeInTheDocument();
     expect(screen.getByText('Alabarda')).toBeInTheDocument();
