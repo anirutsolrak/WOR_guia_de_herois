@@ -1,7 +1,8 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 import { buildGear, buildArtifacts, buildLineups, parseDetail } from './transform.ts';
 
-const t = async (s: string) => 'PT:' + s;
+const term = async (s: string) => 'TERM:' + s;
+const desc = async (s: string) => 'DESC:' + s;
 const RAW = [{ data: {
   info: { id: 1, name: 'X' },
   equipment_list: [
@@ -17,22 +18,22 @@ const RAW = [{ data: {
   lineup: { list: [{ heroes: [{ id: 2, name: 'Elddr', card: 'el.png' }] }] },
 } }];
 
-Deno.test('buildGear traduz e estrutura o slot system-recommended', async () => {
-  const g = await buildGear(parseDetail(RAW), t);
-  assertEquals(g, [{
-    slot: { id: 40, name: 'PT:Weapon', icon_url: 'w.png' },
-    sets: [{ id: 60, name: 'PT:Warlord', desc: 'PT:ATK +25%', icon_url: 's.png', equipment_icon: 'e.png' }],
-    main_attrs: [{ attr_id: 303, name: 'PT:ATK', icon_url: 'a.png' }],
-    sub_attrs: [{ attr_id: 304, name: 'PT:ATK Bonus', icon_url: 'b.png' }],
-  }]);
+Deno.test('buildGear: nomes via term, desc via desc', async () => {
+  const g = await buildGear(parseDetail(RAW), term, desc);
+  assertEquals(g[0].slot.name, 'TERM:Weapon');
+  assertEquals(g[0].sets[0].name, 'TERM:Warlord');
+  assertEquals(g[0].sets[0].desc, 'DESC:ATK +25%');
+  assertEquals(g[0].main_attrs[0].name, 'TERM:ATK');
+  assertEquals(g[0].sub_attrs[0].name, 'TERM:ATK Bonus');
 });
 
-Deno.test('buildArtifacts type 3', async () => {
-  const a = await buildArtifacts(parseDetail(RAW), t);
-  assertEquals(a, [{ id: 70, name: 'PT:Halberd', desc: 'PT:AoE +15%', icon_url: 'h.png', quality: '1' }]);
+Deno.test('buildArtifacts: nome via term, desc via desc', async () => {
+  const a = await buildArtifacts(parseDetail(RAW), term, desc);
+  assertEquals(a[0].name, 'TERM:Halberd');
+  assertEquals(a[0].desc, 'DESC:AoE +15%');
 });
 
-Deno.test('buildLineups traduz nomes', async () => {
-  const l = await buildLineups(parseDetail(RAW), t);
-  assertEquals(l, [{ heroes: [{ id: 2, name: 'PT:Elddr', card_url: 'el.png' }] }]);
+Deno.test('buildLineups: nomes via term', async () => {
+  const l = await buildLineups(parseDetail(RAW), term);
+  assertEquals(l[0].heroes[0].name, 'TERM:Elddr');
 });

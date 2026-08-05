@@ -100,18 +100,18 @@ function systemGroup(list: any[] | undefined) {
   return (list ?? []).find((g) => g.type === 3);
 }
 
-export async function buildGear(d: DetailData, t: T): Promise<GearSlotOut[]> {
+export async function buildGear(d: DetailData, term: T, desc: T): Promise<GearSlotOut[]> {
   const grp = systemGroup(d.equipment_list);
   const out: GearSlotOut[] = [];
   for (const slot of grp?.list ?? []) {
     const sets: GearSlotOut['sets'] = [];
     for (const opt of slot.list ?? []) {
       const s = opt.equipment?.set;
-      if (s) sets.push({ id: s.id, name: await t(s.name ?? ''), desc: await t(s.desc ?? ''), icon_url: s.icon, equipment_icon: opt.equipment?.icon });
+      if (s) sets.push({ id: s.id, name: await term(s.name ?? ''), desc: await desc(s.desc ?? ''), icon_url: s.icon, equipment_icon: opt.equipment?.icon });
     }
-    const mapAttr = async (a: any) => ({ attr_id: a.attr_id, name: await t(a.name ?? ''), icon_url: a.icon });
+    const mapAttr = async (a: any) => ({ attr_id: a.attr_id, name: await term(a.name ?? ''), icon_url: a.icon });
     out.push({
-      slot: { id: slot.equipment_slot.id, name: await t(slot.equipment_slot.name ?? ''), icon_url: slot.equipment_slot.icon },
+      slot: { id: slot.equipment_slot.id, name: await term(slot.equipment_slot.name ?? ''), icon_url: slot.equipment_slot.icon },
       sets,
       main_attrs: await Promise.all((slot.main_attrs ?? []).map(mapAttr)),
       sub_attrs: await Promise.all((slot.sub_attrs ?? []).map(mapAttr)),
@@ -120,12 +120,12 @@ export async function buildGear(d: DetailData, t: T): Promise<GearSlotOut[]> {
   return out;
 }
 
-export async function buildArtifacts(d: DetailData, t: T): Promise<ArtifactOut[]> {
+export async function buildArtifacts(d: DetailData, term: T, desc: T): Promise<ArtifactOut[]> {
   const grp = systemGroup(d.artifactItem_list);
   const out: ArtifactOut[] = [];
   for (const item of grp?.list ?? []) {
     const a = item.artifact;
-    if (a) out.push({ id: a.id, name: await t(a.name ?? ''), desc: await t(a.desc ?? ''), icon_url: a.icon, quality: a.quality });
+    if (a) out.push({ id: a.id, name: await term(a.name ?? ''), desc: await desc(a.desc ?? ''), icon_url: a.icon, quality: a.quality });
   }
   return out;
 }
