@@ -1,16 +1,13 @@
 import { Link, useParams } from 'react-router-dom';
 import { useHero } from '../hooks/useHero';
-import { useDungeons } from '../hooks/useDungeons';
 import { AppShell } from '../components/AppShell';
 import { HeroIdentity } from '../components/HeroIdentity';
-import { RadarPanel } from '../components/RadarPanel';
 import { GearSlotView } from '../components/GearSlot';
 import { LineupRow } from '../components/LineupRow';
 
 export function HeroPage() {
   const { heroId } = useParams();
   const { data: hero, loading, error } = useHero(Number(heroId));
-  const { data: dungeons } = useDungeons();
 
   if (loading) return <AppShell title="Herói"><p className="text-muted">Carregando…</p></AppShell>;
   if (error || !hero) return <AppShell title="Herói"><p className="text-muted">Erro ao carregar herói.</p></AppShell>;
@@ -27,7 +24,12 @@ export function HeroPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_1fr]">
         <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <HeroIdentity hero={hero} />
-          <RadarPanel rates={hero.rates} dungeons={dungeons ?? []} />
+          <section className="rounded-2xl border border-border bg-surface p-4">
+            <h2 className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.1em] text-muted">
+              Descrição
+            </h2>
+            <p className="text-sm leading-relaxed text-muted">{hero.special_pt}</p>
+          </section>
         </div>
 
         <div className="space-y-8">
@@ -58,11 +60,6 @@ export function HeroPage() {
             <div className="space-y-3">
               {hero.lineups.map((l, i) => <LineupRow key={i} lineup={l} />)}
             </div>
-          </section>
-
-          <section>
-            <h2 className="mb-3 font-display text-lg font-bold">Descrição</h2>
-            <p className="leading-relaxed text-muted">{hero.special_pt}</p>
           </section>
 
           {hero.videos.length > 0 && (

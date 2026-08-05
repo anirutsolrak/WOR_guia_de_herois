@@ -36,7 +36,6 @@ describe('HeroPage', () => {
     render(<MemoryRouter><HeroPage /></MemoryRouter>);
     expect(screen.getByRole('heading', { name: 'Lu Bu' })).toBeInTheDocument();
     expect(screen.getByText('Caótico')).toBeInTheDocument();
-    expect(document.querySelector('polygon')).toBeTruthy();
     expect(screen.getByText('Warlord')).toBeInTheDocument();
     expect(screen.getByText('Alabarda')).toBeInTheDocument();
     expect(screen.getByText('Elddr')).toBeInTheDocument();
