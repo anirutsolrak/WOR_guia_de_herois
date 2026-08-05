@@ -63,7 +63,8 @@ body {
   padding: 16px;
 }
 
-a {
+/* escopado só à página legada de Herói (as páginas Tailwind estilizam os links por classe) */
+.hero-page a {
   color: var(--accent);
 }
 

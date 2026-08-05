@@ -17,7 +17,13 @@ export function ModePage() {
 
   return (
     <AppShell title={title} subtitle="Ranking de heróis" banner={mode?.icon_url ?? undefined}>
-      <Link to="/" className="mb-4 inline-block text-sm text-muted hover:text-fg">← Modos</Link>
+      <Link
+        to="/"
+        className="mb-5 inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface
+                   px-3 py-1.5 text-sm text-muted transition hover:border-accent/50 hover:text-fg"
+      >
+        <span aria-hidden className="text-base leading-none">←</span> Modos
+      </Link>
       {loading && <p className="text-muted">Carregando…</p>}
       {error && <p className="text-muted">Erro ao carregar heróis.</p>}
       {!loading && !error && items.length === 0 && (
