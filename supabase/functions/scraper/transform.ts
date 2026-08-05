@@ -13,9 +13,11 @@ export interface DetailData {
 }
 
 export function parseDetail(raw: unknown): DetailData {
-  const arr = raw as any[];
-  if (!Array.isArray(arr) || !arr[0]?.data) throw new Error('resposta de detalhe inesperada');
-  return arr[0].data as DetailData;
+  // A API do jogo pode retornar o envelope como objeto {code,data} ou como
+  // array [{code,data}] dependendo do endpoint/versão. Aceita ambos.
+  const root: any = Array.isArray(raw) ? raw[0] : raw;
+  if (!root?.data) throw new Error('resposta de detalhe inesperada');
+  return root.data as DetailData;
 }
 
 export function invertDungeonRates(d: DetailData) {

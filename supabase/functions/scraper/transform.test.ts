@@ -20,8 +20,13 @@ const RAW = [{
   },
 }];
 
-Deno.test('parseDetail desembrulha data', () => {
+Deno.test('parseDetail desembrulha data (envelope em array)', () => {
   assertEquals(parseDetail(RAW).info.id, 2843769);
+});
+
+Deno.test('parseDetail desembrulha data (envelope como objeto)', () => {
+  // A API real retorna o envelope como objeto, não array.
+  assertEquals(parseDetail(RAW[0]).info.id, 2843769);
 });
 
 Deno.test('invertDungeonRates converte rate para numero', () => {
