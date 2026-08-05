@@ -26,6 +26,15 @@ describe('AppShell', () => {
     fireEvent.change(input, { target: { value: 'lu' } });
     expect(onSearch).toHaveBeenCalledWith('lu');
   });
+
+  it('mostra o banner de fundo quando passado', () => {
+    render(<AppShell title="T" banner="b.png"><div /></AppShell>);
+    expect(screen.getByTestId('shell-banner')).toHaveAttribute('src', 'b.png');
+  });
+  it('sem banner, não renderiza a imagem de fundo', () => {
+    render(<AppShell title="T"><div /></AppShell>);
+    expect(screen.queryByTestId('shell-banner')).toBeNull();
+  });
 });
 
 describe('SectionHeader', () => {

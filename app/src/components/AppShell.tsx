@@ -1,18 +1,27 @@
 import type { ReactNode } from 'react';
 
 export function AppShell({
-  title, subtitle, search, onSearch, children,
+  title, subtitle, search, onSearch, banner, children,
 }: {
   title: string;
   subtitle?: string;
   search?: string;
   onSearch?: (v: string) => void;
+  banner?: string;
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-bg text-fg">
       <header className="relative overflow-hidden border-b border-border
                          bg-[radial-gradient(120%_140%_at_80%_-20%,rgba(80,140,255,0.22),transparent_60%)]">
+        {banner && (
+          <img
+            data-testid="shell-banner"
+            src={banner}
+            alt=""
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right opacity-20"
+          />
+        )}
         <div className="mx-auto max-w-5xl px-5 py-7">
           <div className="flex items-center gap-2.5">
             <span className="grid h-7 w-7 place-items-center rounded-lg
