@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Dungeon, HeroCardData, HeroDetail } from './types';
+import type { Dungeon, HeroDetail, HeroRankItem } from './types';
 
 export function assembleHeroDetail(p: any): HeroDetail {
   return {
@@ -17,14 +17,25 @@ export async function getDungeons(sb: SupabaseClient): Promise<Dungeon[]> {
   return data as Dungeon[];
 }
 
-export async function getHeroesByDungeon(sb: SupabaseClient, dungeonId: number): Promise<(HeroCardData & { rate: number })[]> {
+export function mapHeroRankItems(rows: any[]): HeroRankItem[] {
+  return (rows ?? []).map((r) => {
+    const h = r.heroes;
+    return {
+      id: h.id, name_pt: h.name_pt, name_en: h.name_en, card_url: h.card_url,
+      rate: r.rate,
+      factions: (h.hero_factions ?? []).map((hf: any) => hf.factions).filter(Boolean),
+    };
+  });
+}
+
+export async function getHeroesByDungeon(sb: SupabaseClient, dungeonId: number): Promise<HeroRankItem[]> {
   const { data, error } = await sb
     .from('hero_dungeon_rates')
-    .select('rate, heroes(id, name_pt, name_en, card_url)')
+    .select('rate, heroes(id, name_pt, name_en, card_url, hero_factions(factions(title_en, title_pt)))')
     .eq('dungeon_id', dungeonId)
     .order('rate', { ascending: false });
   if (error) throw error;
-  return (data as any[]).map((r) => ({ ...r.heroes, rate: r.rate }));
+  return mapHeroRankItems(data as any[]);
 }
 
 export async function getHeroDetail(sb: SupabaseClient, heroId: number): Promise<HeroDetail> {

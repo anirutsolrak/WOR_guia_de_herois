@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { assembleHeroDetail } from './queries';
+import { assembleHeroDetail, mapHeroRankItems } from './queries';
 
 describe('assembleHeroDetail', () => {
   it('monta HeroDetail a partir das partes', () => {
@@ -13,5 +13,32 @@ describe('assembleHeroDetail', () => {
     expect(detail.rates[0].rate).toBe(50);
     expect(detail.labels[0].label_pt).toBe('DPS em Área');
     expect(detail.gear).toEqual([]);
+  });
+});
+
+describe('mapHeroRankItems', () => {
+  it('achata o payload nested (heroes + hero_factions.factions)', () => {
+    const rows = [{
+      rate: 50,
+      heroes: {
+        id: 1, name_pt: 'Lu Bu', name_en: 'Lu Bu', card_url: 'c.png',
+        hero_factions: [
+          { factions: { title_en: 'Chaotic', title_pt: 'Caótico' } },
+          { factions: { title_en: 'Northerner', title_pt: 'Nortista' } },
+        ],
+      },
+    }];
+    const out = mapHeroRankItems(rows);
+    expect(out[0]).toEqual({
+      id: 1, name_pt: 'Lu Bu', name_en: 'Lu Bu', card_url: 'c.png', rate: 50,
+      factions: [
+        { title_en: 'Chaotic', title_pt: 'Caótico' },
+        { title_en: 'Northerner', title_pt: 'Nortista' },
+      ],
+    });
+  });
+  it('herói sem facções vira []', () => {
+    const out = mapHeroRankItems([{ rate: 1, heroes: { id: 2, name_pt: null, name_en: 'X', card_url: null } }]);
+    expect(out[0].factions).toEqual([]);
   });
 });

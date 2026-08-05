@@ -1,6 +1,14 @@
 export interface Dungeon { id: number; index: number | null; name_pt: string | null; name_en: string; icon_url: string | null; }
 export interface DungeonRate { dungeon_id: number; rate: number; }
 export interface HeroCardData { id: number; name_pt: string | null; name_en: string; card_url: string | null; }
+export interface HeroRankItem {
+  id: number;
+  name_pt: string | null;
+  name_en: string;
+  card_url: string | null;
+  rate: number;
+  factions: { title_en: string; title_pt: string | null }[];
+}
 export interface Attr { attr_id: number; name: string; icon_url?: string; }
 export interface GearSlot {
   slot: { id: number; name: string; icon_url?: string };
