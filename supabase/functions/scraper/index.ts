@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { fetchHeroDetail, fetchClasses, fetchFactions } from './api.ts';
-import { makeTranslator, passthrough } from './translate.ts';
+import { makeTranslator, passthrough, makeCachedAuto, deeplTranslate, cacheGet, cacheSet } from './translate.ts';
 import {
   parseDetail, invertDungeonRates, extractLabels, extractClassIds, extractFactionIds,
   collectRefs, buildGear, buildArtifacts, buildLineups,
@@ -14,36 +14,48 @@ function sbClient() {
   );
 }
 
-// PoC: sem provedor de traducao configurado -> passthrough (glossario ainda atua).
-const auto = passthrough;
+function makeTranslators(sb: ReturnType<typeof sbClient>) {
+  const key = Deno.env.get('DEEPL_API_KEY');
+  const auto = key
+    ? makeCachedAuto({
+        getCached: (en) => cacheGet(sb, en),
+        setCached: (en, pt) => cacheSet(sb, en, pt),
+        translate: (en) => deeplTranslate(key, en),
+      })
+    : passthrough;
+  return { term: makeTranslator(passthrough), desc: makeTranslator(auto) };
+}
 
 async function processHero(id: number) {
   const sb = sbClient();
-  const t = makeTranslator(auto);
+  const { term, desc } = makeTranslators(sb);
   const d = parseDetail(await fetchHeroDetail(id));
-  const refs = await localizeRefs(collectRefs(d), t);
-  const namePt = await t(d.info.name);
-  const specialPt = await t(d.info.special ?? '');
-  const labelsEn = extractLabels(d);
-  const labels = await Promise.all(labelsEn.map(async (l, i) => ({ ordinal: i, label_en: l, label_pt: await t(l) })));
+  const refs = await localizeRefs(collectRefs(d), term, desc);
+  const namePt = await term(d.info.name);
+  const specialPt = await desc(d.info.special ?? '');
+  const labels = await Promise.all(
+    extractLabels(d).map(async (l, i) => ({ ordinal: i, label_en: l, label_pt: await term(l) })),
+  );
   await persist(sb, {
     hero: buildHeroRow(d, namePt, specialPt),
     refs, classIds: extractClassIds(d), factionIds: extractFactionIds(d),
     labels, rates: invertDungeonRates(d),
-    gear: await buildGear(d, t), artifacts: await buildArtifacts(d, t),
-    lineups: await buildLineups(d, t), videos: [],
+    gear: await buildGear(d, term, desc),
+    artifacts: await buildArtifacts(d, term, desc),
+    lineups: await buildLineups(d, term),
+    videos: [],
   });
 }
 
 async function processRefs() {
   const sb = sbClient();
-  const t = makeTranslator(auto);
+  const { term } = makeTranslators(sb);
   const classes = (await fetchClasses()).data?.classes ?? [];
   const factions = (await fetchFactions()).data?.camp ?? [];
   for (const c of classes) if (c.title !== 'All Classes')
-    await sb.from('classes').upsert({ id: c.id, title_en: c.title, title_pt: await t(c.title), icon_url: c.icon }, { onConflict: 'id' });
+    await sb.from('classes').upsert({ id: c.id, title_en: c.title, title_pt: await term(c.title), icon_url: c.icon }, { onConflict: 'id' });
   for (const f of factions) if (f.title !== 'All Factions')
-    await sb.from('factions').upsert({ id: f.id, title_en: f.title, title_pt: await t(f.title), icon_url: f.icon, lord_icon_url: f.lord_icon }, { onConflict: 'id' });
+    await sb.from('factions').upsert({ id: f.id, title_en: f.title, title_pt: await term(f.title), icon_url: f.icon, lord_icon_url: f.lord_icon }, { onConflict: 'id' });
 }
 
 Deno.serve(async (req) => {
