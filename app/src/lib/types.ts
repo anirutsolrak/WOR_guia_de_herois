@@ -23,4 +23,6 @@ export interface HeroDetail {
   labels: { label_pt: string | null; label_en: string }[];
   rates: DungeonRate[];
   gear: GearSlot[]; artifacts: Artifact[]; lineups: Lineup[]; videos: unknown[];
+  classes: { title_en: string; title_pt: string | null }[];
+  factions: { title_en: string; title_pt: string | null }[];
 }

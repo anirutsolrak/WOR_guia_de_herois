@@ -8,6 +8,8 @@ export function assembleHeroDetail(p: any): HeroDetail {
     labels: p.labels ?? [], rates: p.rates ?? [],
     gear: p.gear?.gear ?? [], artifacts: p.artifacts?.artifacts ?? [],
     lineups: p.lineups?.lineups ?? [], videos: p.videos?.videos ?? [],
+    classes: (p.hero.hero_classes ?? []).map((hc: any) => hc.classes).filter(Boolean),
+    factions: (p.hero.hero_factions ?? []).map((hf: any) => hf.factions).filter(Boolean),
   };
 }
 
@@ -40,7 +42,9 @@ export async function getHeroesByDungeon(sb: SupabaseClient, dungeonId: number):
 
 export async function getHeroDetail(sb: SupabaseClient, heroId: number): Promise<HeroDetail> {
   const [hero, labels, rates, gear, artifacts, lineups, videos] = await Promise.all([
-    sb.from('heroes').select('*').eq('id', heroId).single(),
+    sb.from('heroes')
+      .select('*, hero_factions(factions(title_en, title_pt)), hero_classes(classes(title_en, title_pt))')
+      .eq('id', heroId).single(),
     sb.from('hero_labels').select('label_pt, label_en').eq('hero_id', heroId).order('ordinal'),
     sb.from('hero_dungeon_rates').select('dungeon_id, rate').eq('hero_id', heroId),
     sb.from('hero_gear').select('gear').eq('hero_id', heroId).single(),
