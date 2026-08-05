@@ -5,3 +5,4 @@ app/dist/
 .env.local
 supabase/.branches/
 supabase/.temp/
+.superpowers/
