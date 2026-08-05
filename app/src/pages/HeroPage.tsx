@@ -57,7 +57,7 @@ export function HeroPage() {
 
           <section>
             <h2 className="mb-3 font-display text-lg font-bold">Times Recomendados</h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {hero.lineups.map((l, i) => <LineupRow key={i} lineup={l} />)}
             </div>
           </section>
