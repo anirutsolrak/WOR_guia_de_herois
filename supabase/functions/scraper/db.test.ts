@@ -2,21 +2,24 @@ import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 import { localizeRefs, buildHeroRow, buildPayload } from './db.ts';
 import { parseDetail } from './transform.ts';
 
-const t = async (s: string) => 'PT:' + s;
+const term = async (s: string) => 'TERM:' + s;
+const desc = async (s: string) => 'DESC:' + s;
 
-Deno.test('localizeRefs adiciona name_pt/title_pt/desc_pt', async () => {
+Deno.test('localizeRefs: nomes via term, descrições via desc', async () => {
   const refs = {
     dungeons: [{ id: 30, index: 18, name_en: 'Gear Raid I', icon_url: 'd.png' }],
     classes: [{ id: 10, title_en: 'Fighter', icon_url: 'c.png' }],
     factions: [], slots: [], attributes: [],
     sets: [{ id: 60, name_en: 'Warlord', desc_en: 'ATK +25%', icon_url: 's.png' }],
-    artifacts: [],
+    artifacts: [{ id: 70, name_en: 'Halberd', desc_en: 'AoE +15%', icon_url: 'h.png', quality: '1' }],
   };
-  const l = await localizeRefs(refs as any, t);
-  assertEquals(l.dungeons[0].name_pt, 'PT:Gear Raid I');
-  assertEquals(l.classes[0].title_pt, 'PT:Fighter');
-  assertEquals(l.sets[0].name_pt, 'PT:Warlord');
-  assertEquals(l.sets[0].desc_pt, 'PT:ATK +25%');
+  const l = await localizeRefs(refs as any, term, desc);
+  assertEquals(l.dungeons[0].name_pt, 'TERM:Gear Raid I');
+  assertEquals(l.classes[0].title_pt, 'TERM:Fighter');
+  assertEquals(l.sets[0].name_pt, 'TERM:Warlord');
+  assertEquals(l.sets[0].desc_pt, 'DESC:ATK +25%');
+  assertEquals(l.artifacts[0].name_pt, 'TERM:Halberd');
+  assertEquals(l.artifacts[0].desc_pt, 'DESC:AoE +15%');
 });
 
 Deno.test('buildHeroRow monta a linha de heroes', () => {

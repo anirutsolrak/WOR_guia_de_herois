@@ -20,21 +20,21 @@ export function buildHeroRow(d: DetailData, namePt: string, specialPt: string): 
   };
 }
 
-export async function localizeRefs(refs: Refs, t: T) {
-  const loc = async <A extends Record<string, any>>(rows: A[], fields: [string, string][]) =>
+export async function localizeRefs(refs: Refs, term: T, desc: T) {
+  const loc = async <A extends Record<string, any>>(rows: A[], fields: [string, string, T][]) =>
     Promise.all(rows.map(async (r) => {
       const o: any = { ...r };
-      for (const [from, to] of fields) o[to] = r[from] != null ? await t(r[from]) : null;
+      for (const [from, to, tr] of fields) o[to] = r[from] != null ? await tr(r[from]) : null;
       return o;
     }));
   return {
-    dungeons: await loc(refs.dungeons, [['name_en', 'name_pt']]),
-    classes: await loc(refs.classes, [['title_en', 'title_pt']]),
-    factions: await loc(refs.factions, [['title_en', 'title_pt']]),
-    slots: await loc(refs.slots, [['name_en', 'name_pt']]),
-    attributes: await loc(refs.attributes, [['name_en', 'name_pt']]),
-    sets: await loc(refs.sets, [['name_en', 'name_pt'], ['desc_en', 'desc_pt']]),
-    artifacts: await loc(refs.artifacts, [['name_en', 'name_pt'], ['desc_en', 'desc_pt']]),
+    dungeons: await loc(refs.dungeons, [['name_en', 'name_pt', term]]),
+    classes: await loc(refs.classes, [['title_en', 'title_pt', term]]),
+    factions: await loc(refs.factions, [['title_en', 'title_pt', term]]),
+    slots: await loc(refs.slots, [['name_en', 'name_pt', term]]),
+    attributes: await loc(refs.attributes, [['name_en', 'name_pt', term]]),
+    sets: await loc(refs.sets, [['name_en', 'name_pt', term], ['desc_en', 'desc_pt', desc]]),
+    artifacts: await loc(refs.artifacts, [['name_en', 'name_pt', term], ['desc_en', 'desc_pt', desc]]),
   };
 }
 export type LocalizedRefs = Awaited<ReturnType<typeof localizeRefs>>;
