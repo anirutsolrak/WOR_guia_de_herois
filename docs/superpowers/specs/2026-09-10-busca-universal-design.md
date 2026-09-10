@@ -32,7 +32,7 @@ intactas.
 | Limite de sugestões | 8 |
 | Origem do rank | **View** no Postgres (`hero_dungeon_ranks`) com `rank()` e `total` |
 | Ordem da lista de conteúdos | Melhor posição primeiro (`rank` crescente) |
-| Modos sem rank | Listados **no fim**, esmaecidos, com `—` no lugar da posição |
+| Modos sem rank | Listados **no fim**, esmaecidos, com `—` no lugar da posição. Na prática "sem rank" é `rate < RATE_MINIMO` (1), não ausência de linha — os dados reais são o produto cruzado herói × modo, então toda dungeon tem uma linha em `rates` |
 | Posição do bloco na página | Primeira seção da coluna direita, acima de "Equipamento" |
 
 ### Por que cache em memória e não query por tecla
@@ -156,12 +156,18 @@ sempre, sem prop de controle. `title`, `subtitle`, `banner` e `children` seguem 
 Recebe `rates: DungeonRate[]` e `dungeons: Dungeon[]`.
 
 - Faz o join por `dungeon_id` para obter `name_pt ?? name_en` e `icon_url`.
-- Ranqueados: ordenados por `rank` crescente; cada linha é
-  `ícone · nome do modo · #{rank} de {total} · barra de rate`.
-- Não ranqueados (dungeon sem linha correspondente em `rates`): no fim, em `text-subtle`,
-  com `—` no lugar da posição e sem barra.
+- Ranqueados: dungeon tem linha em `rates` **e** `rate >= RATE_MINIMO` (1); ordenados por
+  `rank` crescente; cada linha é `ícone · nome do modo · #{rank} de {total} · barra de rate`.
+- Não ranqueados: dungeon sem linha em `rates`, ou com `rate < RATE_MINIMO`: no fim, em
+  `text-subtle`, com `—` no lugar da posição e sem barra. Os dados reais mostram um produto
+  cruzado completo (toda dungeon tem linha para todo herói), então a definição original —
+  "sem linha correspondente" — nunca disparava; o sinal real de "sem rank" é um rate
+  irrisório, não a ausência de linha.
 - Cada linha é um `<Link to={"/modo/" + id}>`, fechando o ciclo herói → modo → herói.
-- A barra de rate normaliza por `Math.max(50, ...rates)`, como `ModePage` e `RateBar` já fazem.
+- A barra de rate é o percentil do `rank` dentro do modo:
+  `(1 - (rank - 1) / total) * 100` — `#1 de N` enche a barra, `#N de N` a esvazia quase
+  totalmente. Isso substitui a normalização antiga por `Math.max(50, ...rates)`, que
+  comparava o rate do herói com o próprio teto e podia contradizer a posição mostrada ao lado.
 
 ### `pages/HeroPage.tsx`
 

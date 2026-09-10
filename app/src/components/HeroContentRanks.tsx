@@ -1,25 +1,26 @@
 import { Link } from 'react-router-dom';
 import type { Dungeon, DungeonRate } from '../lib/types';
 
+// Os dados trazem uma linha por herói × modo, então "sem rank" nunca vem da ausência
+// de linha: vem de um rate irrisório. Abaixo de 1 a posição não informa nada útil.
+const RATE_MINIMO = 1;
+
 export function HeroContentRanks({ rates, dungeons }: { rates: DungeonRate[]; dungeons: Dungeon[] }) {
   const byDungeon = new Map(rates.map((r) => [r.dungeon_id, r]));
 
   const ranked = dungeons
-    .filter((d) => byDungeon.has(d.id))
+    .filter((d) => (byDungeon.get(d.id)?.rate ?? -1) >= RATE_MINIMO)
     .sort((a, b) => byDungeon.get(a.id)!.rank - byDungeon.get(b.id)!.rank);
 
   const unranked = dungeons
-    .filter((d) => !byDungeon.has(d.id))
+    .filter((d) => (byDungeon.get(d.id)?.rate ?? -1) < RATE_MINIMO)
     .sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-
-  // Mesma normalização usada no ranking do modo: 50 é o piso da escala.
-  const maxRate = Math.max(50, ...ranked.map((d) => byDungeon.get(d.id)!.rate));
 
   return (
     <div className="space-y-1.5">
       {ranked.map((d) => {
         const r = byDungeon.get(d.id)!;
-        const pct = Math.max(0, Math.min(100, (r.rate / maxRate) * 100));
+        const pct = r.total > 0 ? Math.max(0, Math.min(100, (1 - (r.rank - 1) / r.total) * 100)) : 0;
         return (
           <Link
             key={d.id}
@@ -33,7 +34,8 @@ export function HeroContentRanks({ rates, dungeons }: { rates: DungeonRate[]; du
               #{r.rank} de {r.total}
             </span>
             <div className="h-2 w-20 shrink-0 overflow-hidden rounded-full bg-border-strong">
-              <div className="h-full rounded-full bg-gradient-to-r from-accent to-accent-2"
+              <div data-testid={`rank-bar-${d.id}`}
+                   className="h-full rounded-full bg-gradient-to-r from-accent to-accent-2"
                    style={{ width: `${pct}%` }} />
             </div>
           </Link>
