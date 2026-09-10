@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Dungeon, HeroDetail, HeroRankItem } from './types';
+import type { Dungeon, HeroDetail, HeroRankItem, HeroSearchItem } from './types';
 
 export function assembleHeroDetail(p: any): HeroDetail {
   return {
@@ -17,6 +17,15 @@ export async function getDungeons(sb: SupabaseClient): Promise<Dungeon[]> {
   const { data, error } = await sb.from('dungeons').select('*').order('index', { ascending: true });
   if (error) throw error;
   return data as Dungeon[];
+}
+
+export async function getHeroSearchIndex(sb: SupabaseClient): Promise<HeroSearchItem[]> {
+  const { data, error } = await sb
+    .from('heroes')
+    .select('id, name_pt, name_en, card_url')
+    .order('name_en', { ascending: true });
+  if (error) throw error;
+  return data as HeroSearchItem[];
 }
 
 export function mapHeroRankItems(rows: any[]): HeroRankItem[] {
