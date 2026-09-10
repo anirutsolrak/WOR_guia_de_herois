@@ -62,7 +62,7 @@ export async function getHeroDetail(sb: SupabaseClient, heroId: number): Promise
       .select('*, hero_factions(factions(title_en, title_pt)), hero_classes(classes(title_en, title_pt))')
       .eq('id', heroId).single(),
     sb.from('hero_labels').select('label_pt, label_en').eq('hero_id', heroId).order('ordinal'),
-    sb.from('hero_dungeon_rates').select('dungeon_id, rate, rank, total').eq('hero_id', heroId),
+    sb.from('hero_dungeon_ranks').select('dungeon_id, rate, rank, total').eq('hero_id', heroId),
     sb.from('hero_gear').select('gear').eq('hero_id', heroId).single(),
     sb.from('hero_artifacts').select('artifacts').eq('hero_id', heroId).single(),
     sb.from('hero_lineups').select('lineups').eq('hero_id', heroId).single(),
