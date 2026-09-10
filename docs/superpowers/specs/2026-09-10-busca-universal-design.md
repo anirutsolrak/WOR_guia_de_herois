@@ -32,7 +32,7 @@ intactas.
 | Limite de sugestões | 8 |
 | Origem do rank | **View** no Postgres (`hero_dungeon_ranks`) com `rank()` e `total` |
 | Ordem da lista de conteúdos | Melhor posição primeiro (`rank` crescente) |
-| Modos sem rank | Listados **no fim**, esmaecidos, com `—` no lugar da posição. Na prática "sem rank" é `rate < RATE_MINIMO` (1), não ausência de linha — os dados reais são o produto cruzado herói × modo, então toda dungeon tem uma linha em `rates` |
+| Modos sem rank | Colapsados atrás de um botão "Ver N conteúdos sem rank", renderizado após a lista ranqueada; clicar expande a lista esmaecida, com `—` no lugar da posição. Na prática "sem rank" é `rate < RATE_MINIMO` (1), não ausência de linha — os dados reais são o produto cruzado herói × modo, então toda dungeon tem uma linha em `rates`. Colapsado por padrão porque, com dados reais, o grupo sem rank costuma ser a maioria da lista (11 de 19 modos num herói típico) e dominava visualmente a seção |
 | Posição do bloco na página | Primeira seção da coluna direita, acima de "Equipamento" |
 
 ### Por que cache em memória e não query por tecla
@@ -158,11 +158,17 @@ Recebe `rates: DungeonRate[]` e `dungeons: Dungeon[]`.
 - Faz o join por `dungeon_id` para obter `name_pt ?? name_en` e `icon_url`.
 - Ranqueados: dungeon tem linha em `rates` **e** `rate >= RATE_MINIMO` (1); ordenados por
   `rank` crescente; cada linha é `ícone · nome do modo · #{rank} de {total} · barra de rate`.
-- Não ranqueados: dungeon sem linha em `rates`, ou com `rate < RATE_MINIMO`: no fim, em
-  `text-subtle`, com `—` no lugar da posição e sem barra. Os dados reais mostram um produto
-  cruzado completo (toda dungeon tem linha para todo herói), então a definição original —
-  "sem linha correspondente" — nunca disparava; o sinal real de "sem rank" é um rate
-  irrisório, não a ausência de linha.
+- Não ranqueados: dungeon sem linha em `rates`, ou com `rate < RATE_MINIMO`: em `text-subtle`,
+  com `—` no lugar da posição e sem barra. Os dados reais mostram um produto cruzado completo
+  (toda dungeon tem linha para todo herói), então a definição original — "sem linha
+  correspondente" — nunca disparava; o sinal real de "sem rank" é um rate irrisório, não a
+  ausência de linha.
+- Ficam colapsados por padrão atrás de um botão renderizado depois da lista ranqueada
+  (`useState` local): "Ver N conteúdos sem rank" (singular "Ver 1 conteúdo sem rank") quando
+  fechado, "Ocultar conteúdos sem rank" quando aberto, com `aria-expanded` refletindo o
+  estado. Sem modos sem rank, nenhum botão é renderizado. Motivo: com dados reais o grupo sem
+  rank costuma ser a maioria (11 de 19 modos num herói típico), o que fazia o bloco esmaecido
+  dominar visualmente a seção e enterrar os modos em que o herói é bom.
 - Cada linha é um `<Link to={"/modo/" + id}>`, fechando o ciclo herói → modo → herói.
 - A barra de rate é o percentil do `rank` dentro do modo:
   `(1 - (rank - 1) / total) * 100` — `#1 de N` enche a barra, `#N de N` a esvazia quase

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect } from 'vitest';
 import { HeroContentRanks } from './HeroContentRanks';
@@ -34,6 +34,7 @@ describe('HeroContentRanks', () => {
 
   it('modo sem rank aparece por último, com travessão e usando name_en', () => {
     renderRanks();
+    fireEvent.click(screen.getByRole('button', { name: 'Ver 1 conteúdo sem rank' }));
     const linhas = screen.getAllByRole('link').map((l) => l.textContent ?? '');
     expect(linhas[2]).toContain('Guild War');
     expect(linhas[2]).toContain('—');
@@ -46,6 +47,7 @@ describe('HeroContentRanks', () => {
 
   it('herói sem nenhum rank mostra os três modos esmaecidos', () => {
     render(<MemoryRouter><HeroContentRanks rates={[]} dungeons={dungeons} /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('button', { name: 'Ver 3 conteúdos sem rank' }));
     expect(screen.getAllByRole('link')).toHaveLength(3);
     expect(screen.getAllByText('—')).toHaveLength(3);
   });
@@ -56,6 +58,7 @@ describe('HeroContentRanks', () => {
       { dungeon_id: 10, rate: 0.39, rank: 67, total: 160 },
     ];
     render(<MemoryRouter><HeroContentRanks rates={ratesComRuido} dungeons={dungeons} /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('button', { name: 'Ver 2 conteúdos sem rank' }));
     const linhas = screen.getAllByRole('link').map((l) => l.textContent ?? '');
     expect(linhas[1]).toContain('Arena de Honra');
     expect(linhas[1]).toContain('—');
@@ -83,5 +86,36 @@ describe('HeroContentRanks', () => {
     render(<MemoryRouter><HeroContentRanks rates={ratesPercentil} dungeons={dungeons} /></MemoryRouter>);
     expect(screen.getByTestId('rank-bar-20')).toHaveStyle({ width: '100%' });
     expect(screen.getByTestId('rank-bar-10')).toHaveStyle({ width: '50%' });
+  });
+
+  it('por padrão os modos sem rank ficam ocultos atrás de um botão com a contagem', () => {
+    renderRanks();
+    expect(screen.queryByText('Guild War')).not.toBeInTheDocument();
+    const botao = screen.getByRole('button', { name: 'Ver 1 conteúdo sem rank' });
+    expect(botao).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('clicar no botão revela os modos sem rank; clicar de novo esconde', () => {
+    renderRanks();
+    const botao = screen.getByRole('button', { name: 'Ver 1 conteúdo sem rank' });
+    fireEvent.click(botao);
+    expect(screen.getByText('Guild War')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ocultar conteúdos sem rank' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar conteúdos sem rank' }));
+    expect(screen.queryByText('Guild War')).not.toBeInTheDocument();
+  });
+
+  it('com todos os modos ranqueados, nenhum botão de alternar é renderizado', () => {
+    const ratesTodosRanqueados: DungeonRate[] = [
+      { dungeon_id: 20, rate: 98.4, rank: 1, total: 57 },
+      { dungeon_id: 10, rate: 91.2, rank: 2, total: 57 },
+      { dungeon_id: 30, rate: 80.1, rank: 3, total: 57 },
+    ];
+    render(<MemoryRouter><HeroContentRanks rates={ratesTodosRanqueados} dungeons={dungeons} /></MemoryRouter>);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

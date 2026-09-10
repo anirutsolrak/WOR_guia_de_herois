@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Dungeon, DungeonRate } from '../lib/types';
 
@@ -6,6 +7,7 @@ import type { Dungeon, DungeonRate } from '../lib/types';
 const RATE_MINIMO = 1;
 
 export function HeroContentRanks({ rates, dungeons }: { rates: DungeonRate[]; dungeons: Dungeon[] }) {
+  const [mostrarSemRank, setMostrarSemRank] = useState(false);
   const byDungeon = new Map(rates.map((r) => [r.dungeon_id, r]));
 
   const ranked = dungeons
@@ -42,19 +44,36 @@ export function HeroContentRanks({ rates, dungeons }: { rates: DungeonRate[]; du
         );
       })}
 
-      {unranked.map((d) => (
-        <Link
-          key={d.id}
-          to={`/modo/${d.id}`}
-          className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2
-                     opacity-50 transition hover:opacity-80"
+      {unranked.length > 0 && (
+        <button
+          type="button"
+          aria-expanded={mostrarSemRank}
+          onClick={() => setMostrarSemRank((v) => !v)}
+          className="mt-2 w-full rounded-xl border border-border bg-surface px-3 py-2
+                     text-xs text-muted transition hover:border-accent/50 hover:text-fg"
         >
-          {d.icon_url && <img src={d.icon_url} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />}
-          <span className="min-w-0 flex-1 truncate text-sm text-subtle">{d.name_pt ?? d.name_en}</span>
-          <span className="shrink-0 text-xs text-subtle">—</span>
-          <div className="w-20 shrink-0" />
-        </Link>
-      ))}
+          {mostrarSemRank
+            ? 'Ocultar conteúdos sem rank'
+            : unranked.length === 1
+              ? 'Ver 1 conteúdo sem rank'
+              : `Ver ${unranked.length} conteúdos sem rank`}
+        </button>
+      )}
+
+      {mostrarSemRank &&
+        unranked.map((d) => (
+          <Link
+            key={d.id}
+            to={`/modo/${d.id}`}
+            className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2
+                       opacity-50 transition hover:opacity-80"
+          >
+            {d.icon_url && <img src={d.icon_url} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />}
+            <span className="min-w-0 flex-1 truncate text-sm text-subtle">{d.name_pt ?? d.name_en}</span>
+            <span className="shrink-0 text-xs text-subtle">—</span>
+            <div className="w-20 shrink-0" />
+          </Link>
+        ))}
     </div>
   );
 }
