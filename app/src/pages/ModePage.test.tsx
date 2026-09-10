@@ -17,6 +17,9 @@ vi.mock('../hooks/useDungeons', () => ({
 vi.mock('../hooks/useHeroesByDungeon', () => ({
   useHeroesByDungeon: () => heroesMock(),
 }));
+vi.mock('../hooks/useHeroSearchIndex', () => ({
+  useHeroSearchIndex: () => ({ data: [], loading: false, error: null }),
+}));
 
 import { ModePage } from './ModePage';
 

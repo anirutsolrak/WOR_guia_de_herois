@@ -1,14 +1,24 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi } from 'vitest';
 import { AppShell } from './AppShell';
 import { SectionHeader } from './SectionHeader';
 
+vi.mock('../hooks/useHeroSearchIndex', () => ({
+  useHeroSearchIndex: () => ({
+    data: [{ id: 1, name_pt: 'Lu Bu', name_en: 'Lu Bu', card_url: 'lu.png' }],
+    loading: false, error: null,
+  }),
+}));
+
 describe('AppShell', () => {
   it('mostra marca, título, subtítulo e conteúdo', () => {
     render(
-      <AppShell title="Melhores heróis por conteúdo" subtitle="Escolha um modo">
-        <div>corpo</div>
-      </AppShell>,
+      <MemoryRouter>
+        <AppShell title="Melhores heróis por conteúdo" subtitle="Escolha um modo">
+          <div>corpo</div>
+        </AppShell>
+      </MemoryRouter>,
     );
     expect(screen.getByText('WoR Guia')).toBeInTheDocument();
     expect(screen.getByText('Melhores heróis por conteúdo')).toBeInTheDocument();
@@ -16,23 +26,20 @@ describe('AppShell', () => {
     expect(screen.getByText('corpo')).toBeInTheDocument();
   });
 
-  it('mostra busca só quando onSearch é passado e emite o valor', () => {
-    const onSearch = vi.fn();
-    const { rerender } = render(<AppShell title="T"><div /></AppShell>);
-    expect(screen.queryByRole('textbox')).toBeNull();
-
-    rerender(<AppShell title="T" search="" onSearch={onSearch}><div /></AppShell>);
-    const input = screen.getByRole('textbox');
+  it('mostra sempre a busca de heróis', () => {
+    render(<MemoryRouter><AppShell title="T"><div /></AppShell></MemoryRouter>);
+    const input = screen.getByRole('combobox');
+    expect(input).toHaveAttribute('aria-label', 'Buscar herói');
     fireEvent.change(input, { target: { value: 'lu' } });
-    expect(onSearch).toHaveBeenCalledWith('lu');
+    expect(screen.getByRole('option')).toHaveTextContent('Lu Bu');
   });
 
   it('mostra o banner de fundo quando passado', () => {
-    render(<AppShell title="T" banner="b.png"><div /></AppShell>);
+    render(<MemoryRouter><AppShell title="T" banner="b.png"><div /></AppShell></MemoryRouter>);
     expect(screen.getByTestId('shell-banner')).toHaveAttribute('src', 'b.png');
   });
   it('sem banner, não renderiza a imagem de fundo', () => {
-    render(<AppShell title="T"><div /></AppShell>);
+    render(<MemoryRouter><AppShell title="T"><div /></AppShell></MemoryRouter>);
     expect(screen.queryByTestId('shell-banner')).toBeNull();
   });
 });

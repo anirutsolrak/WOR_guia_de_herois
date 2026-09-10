@@ -28,9 +28,19 @@ export function IndexPage() {
     <AppShell
       title="Melhores heróis por conteúdo"
       subtitle="Escolha um modo e veja o ranking"
-      search={q}
-      onSearch={setQ}
     >
+      <div className="mb-6 flex max-w-sm items-center gap-2 rounded-lg border border-border-strong
+                      bg-surface px-3 py-2 text-sm text-muted focus-within:border-accent">
+        <span aria-hidden>⚑</span>
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Filtrar modo…"
+          aria-label="Filtrar modo"
+          className="w-full bg-transparent text-fg placeholder:text-subtle focus:outline-none"
+        />
+      </div>
       {loading && <p className="text-muted">Carregando…</p>}
       {error && <p className="text-muted">Erro ao carregar modos.</p>}
       <div className="space-y-8">

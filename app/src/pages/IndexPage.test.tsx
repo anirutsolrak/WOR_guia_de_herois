@@ -12,6 +12,9 @@ vi.mock('../hooks/useDungeons', () => ({
     loading: false, error: null,
   }),
 }));
+vi.mock('../hooks/useHeroSearchIndex', () => ({
+  useHeroSearchIndex: () => ({ data: [], loading: false, error: null }),
+}));
 
 import { IndexPage } from './IndexPage';
 
@@ -29,7 +32,7 @@ describe('IndexPage', () => {
 
   it('a busca filtra os cards', () => {
     renderPage();
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'guilda' } });
+    fireEvent.change(screen.getByLabelText('Filtrar modo'), { target: { value: 'guilda' } });
     expect(screen.getByText('Guerra de Guilda')).toBeInTheDocument();
     expect(screen.queryByText('Raide de Equipamento I')).toBeNull();
     expect(screen.queryByText('Gear')).toBeNull(); // seção Gear some quando vazia

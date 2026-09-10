@@ -28,6 +28,9 @@ vi.mock('../hooks/useHero', () => ({
     loading: false, error: null,
   }),
 }));
+vi.mock('../hooks/useHeroSearchIndex', () => ({
+  useHeroSearchIndex: () => ({ data: [], loading: false, error: null }),
+}));
 
 import { HeroPage } from './HeroPage';
 
