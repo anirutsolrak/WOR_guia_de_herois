@@ -1,13 +1,16 @@
 import { Link, useParams } from 'react-router-dom';
 import { useHero } from '../hooks/useHero';
+import { useDungeons } from '../hooks/useDungeons';
 import { AppShell } from '../components/AppShell';
 import { HeroIdentity } from '../components/HeroIdentity';
+import { HeroContentRanks } from '../components/HeroContentRanks';
 import { GearSlotView } from '../components/GearSlot';
 import { LineupRow } from '../components/LineupRow';
 
 export function HeroPage() {
   const { heroId } = useParams();
   const { data: hero, loading, error } = useHero(Number(heroId));
+  const { data: dungeons } = useDungeons();
 
   if (loading) return <AppShell title="Herói"><p className="text-muted">Carregando…</p></AppShell>;
   if (error || !hero) return <AppShell title="Herói"><p className="text-muted">Erro ao carregar herói.</p></AppShell>;
@@ -33,6 +36,11 @@ export function HeroPage() {
         </div>
 
         <div className="space-y-8">
+          <section>
+            <h2 className="mb-3 font-display text-lg font-bold">Conteúdos</h2>
+            <HeroContentRanks rates={hero.rates} dungeons={dungeons ?? []} />
+          </section>
+
           <section>
             <h2 className="mb-3 font-display text-lg font-bold">Equipamento (Recomendado)</h2>
             <div className="space-y-3">
