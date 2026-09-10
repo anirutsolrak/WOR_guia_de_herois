@@ -6,7 +6,7 @@ const dungeons = [
   { id: 30, index: 1, name_pt: 'Raide de Equipamento I', name_en: 'Gear Raid I', icon_url: null },
   { id: 31, index: 2, name_pt: 'Guerra de Guilda', name_en: 'Guild War', icon_url: null },
 ];
-const rates = [{ dungeon_id: 30, rate: 50 }, { dungeon_id: 31, rate: 10 }];
+const rates = [{ dungeon_id: 30, rate: 50, rank: 1, total: 10 }, { dungeon_id: 31, rate: 10, rank: 2, total: 10 }];
 
 describe('RadarPanel', () => {
   it('renderiza o radar e a legenda com os nomes dos modos', () => {

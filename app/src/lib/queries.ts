@@ -5,7 +5,14 @@ export function assembleHeroDetail(p: any): HeroDetail {
   return {
     id: p.hero.id, name_pt: p.hero.name_pt, name_en: p.hero.name_en,
     big_card_url: p.hero.big_card_url, star_level: p.hero.star_level, special_pt: p.hero.special_pt,
-    labels: p.labels ?? [], rates: p.rates ?? [],
+    labels: p.labels ?? [],
+    // rank() e count() voltam como bigint — o PostgREST pode entregá-los como string.
+    rates: (p.rates ?? []).map((r: any) => ({
+      dungeon_id: Number(r.dungeon_id),
+      rate: Number(r.rate),
+      rank: Number(r.rank),
+      total: Number(r.total),
+    })),
     gear: p.gear?.gear ?? [], artifacts: p.artifacts?.artifacts ?? [],
     lineups: p.lineups?.lineups ?? [], videos: p.videos?.videos ?? [],
     classes: (p.hero.hero_classes ?? []).map((hc: any) => hc.classes).filter(Boolean),
@@ -55,7 +62,7 @@ export async function getHeroDetail(sb: SupabaseClient, heroId: number): Promise
       .select('*, hero_factions(factions(title_en, title_pt)), hero_classes(classes(title_en, title_pt))')
       .eq('id', heroId).single(),
     sb.from('hero_labels').select('label_pt, label_en').eq('hero_id', heroId).order('ordinal'),
-    sb.from('hero_dungeon_rates').select('dungeon_id, rate').eq('hero_id', heroId),
+    sb.from('hero_dungeon_rates').select('dungeon_id, rate, rank, total').eq('hero_id', heroId),
     sb.from('hero_gear').select('gear').eq('hero_id', heroId).single(),
     sb.from('hero_artifacts').select('artifacts').eq('hero_id', heroId).single(),
     sb.from('hero_lineups').select('lineups').eq('hero_id', heroId).single(),

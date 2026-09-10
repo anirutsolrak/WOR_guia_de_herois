@@ -6,13 +6,23 @@ describe('assembleHeroDetail', () => {
     const detail = assembleHeroDetail({
       hero: { id: 1, name_pt: 'Lu Bu', name_en: 'Lu Bu', big_card_url: 'b.png', star_level: 5, special_pt: 'domina' },
       labels: [{ label_pt: 'DPS em Área', label_en: 'AoE DPS' }],
-      rates: [{ dungeon_id: 30, rate: 50 }],
+      rates: [{ dungeon_id: 30, rate: 50, rank: 1, total: 10 }],
       gear: { gear: [] }, artifacts: { artifacts: [] }, lineups: { lineups: [] }, videos: { videos: [] },
     });
     expect(detail.name_pt).toBe('Lu Bu');
     expect(detail.rates[0].rate).toBe(50);
     expect(detail.labels[0].label_pt).toBe('DPS em Área');
     expect(detail.gear).toEqual([]);
+  });
+
+  it('converte rank e total para número, inclusive quando chegam como string', () => {
+    const detail = assembleHeroDetail({
+      hero: { id: 1, name_pt: 'Lu Bu', name_en: 'Lu Bu', big_card_url: null, star_level: 5, special_pt: null },
+      labels: [],
+      rates: [{ dungeon_id: 30, rate: '92.5', rank: '3', total: '57' }],
+      gear: { gear: [] }, artifacts: { artifacts: [] }, lineups: { lineups: [] }, videos: { videos: [] },
+    });
+    expect(detail.rates[0]).toEqual({ dungeon_id: 30, rate: 92.5, rank: 3, total: 57 });
   });
 });
 

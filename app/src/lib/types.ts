@@ -1,5 +1,5 @@
 export interface Dungeon { id: number; index: number | null; name_pt: string | null; name_en: string; icon_url: string | null; }
-export interface DungeonRate { dungeon_id: number; rate: number; }
+export interface DungeonRate { dungeon_id: number; rate: number; rank: number; total: number; }
 export interface HeroSearchItem { id: number; name_pt: string | null; name_en: string; card_url: string | null; }
 export interface HeroCardData { id: number; name_pt: string | null; name_en: string; card_url: string | null; }
 export interface HeroRankItem {
