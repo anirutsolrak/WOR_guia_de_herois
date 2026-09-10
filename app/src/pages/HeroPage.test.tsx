@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -54,13 +54,14 @@ describe('HeroPage', () => {
     expect(screen.getByText('domina o campo')).toBeInTheDocument();
   });
 
-  it('lista a posição do herói por conteúdo, com os sem rank no fim', () => {
+  it('lista a posição do herói por conteúdo e, ao abrir o bloco sem rank, mostra os sem rank', () => {
     render(<MemoryRouter><HeroPage /></MemoryRouter>);
     expect(screen.getByRole('heading', { name: 'Conteúdos' })).toBeInTheDocument();
     expect(screen.getByText('#2 de 40')).toBeInTheDocument();
-    expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Raide de Equipamento I/ }))
       .toHaveAttribute('href', '/modo/30');
+    fireEvent.click(screen.getByRole('button', { name: 'Ver 1 conteúdo sem rank' }));
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 
   it('mostra erro ao carregar modos sem quebrar o resto da página', () => {
