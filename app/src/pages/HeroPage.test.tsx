@@ -1,19 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const { dungeonsMock } = vi.hoisted(() => ({ dungeonsMock: vi.fn() }));
 
 vi.mock('react-router-dom', async (orig) => ({
   ...(await orig<typeof import('react-router-dom')>()),
   useParams: () => ({ heroId: '1' }),
 }));
 vi.mock('../hooks/useDungeons', () => ({
-  useDungeons: () => ({
-    data: [
-      { id: 30, index: 1, name_pt: 'Raide de Equipamento I', name_en: 'Gear Raid I', icon_url: null },
-      { id: 31, index: 2, name_pt: 'Guerra de Guilda', name_en: 'Guild War', icon_url: null },
-    ],
-    loading: false, error: null,
-  }),
+  useDungeons: () => dungeonsMock(),
 }));
 vi.mock('../hooks/useHero', () => ({
   useHero: () => ({
@@ -38,6 +34,16 @@ vi.mock('../hooks/useHeroSearchIndex', () => ({
 import { HeroPage } from './HeroPage';
 
 describe('HeroPage', () => {
+  beforeEach(() => {
+    dungeonsMock.mockReturnValue({
+      data: [
+        { id: 30, index: 1, name_pt: 'Raide de Equipamento I', name_en: 'Gear Raid I', icon_url: null },
+        { id: 31, index: 2, name_pt: 'Guerra de Guilda', name_en: 'Guild War', icon_url: null },
+      ],
+      loading: false, error: null,
+    });
+  });
+
   it('renderiza cabeçalho, identidade, radar, gear, artefato, time e descrição', () => {
     render(<MemoryRouter><HeroPage /></MemoryRouter>);
     expect(screen.getByRole('heading', { name: 'Lu Bu' })).toBeInTheDocument();
@@ -55,5 +61,12 @@ describe('HeroPage', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Raide de Equipamento I/ }))
       .toHaveAttribute('href', '/modo/30');
+  });
+
+  it('mostra erro ao carregar modos sem quebrar o resto da página', () => {
+    dungeonsMock.mockReturnValue({ data: null, loading: false, error: new Error('falhou') });
+    render(<MemoryRouter><HeroPage /></MemoryRouter>);
+    expect(screen.getByText('Erro ao carregar modos.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lu Bu' })).toBeInTheDocument();
   });
 });

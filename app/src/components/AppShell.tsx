@@ -11,15 +11,17 @@ export function AppShell({
 }) {
   return (
     <div className="min-h-screen bg-bg text-fg">
-      <header className="relative overflow-hidden border-b border-border
+      <header className="relative border-b border-border
                          bg-[radial-gradient(120%_140%_at_80%_-20%,rgba(80,140,255,0.22),transparent_60%)]">
         {banner && (
-          <img
-            data-testid="shell-banner"
-            src={banner}
-            alt=""
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right opacity-20"
-          />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <img
+              data-testid="shell-banner"
+              src={banner}
+              alt=""
+              className="h-full w-full object-cover object-right opacity-20"
+            />
+          </div>
         )}
         <div className="mx-auto max-w-5xl px-5 py-7">
           <div className="flex items-center gap-2.5">

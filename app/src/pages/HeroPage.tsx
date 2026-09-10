@@ -10,7 +10,7 @@ import { LineupRow } from '../components/LineupRow';
 export function HeroPage() {
   const { heroId } = useParams();
   const { data: hero, loading, error } = useHero(Number(heroId));
-  const { data: dungeons } = useDungeons();
+  const { data: dungeons, loading: dungeonsLoading, error: dungeonsError } = useDungeons();
 
   if (loading) return <AppShell title="Herói"><p className="text-muted">Carregando…</p></AppShell>;
   if (error || !hero) return <AppShell title="Herói"><p className="text-muted">Erro ao carregar herói.</p></AppShell>;
@@ -38,7 +38,11 @@ export function HeroPage() {
         <div className="space-y-8">
           <section>
             <h2 className="mb-3 font-display text-lg font-bold">Conteúdos</h2>
-            <HeroContentRanks rates={hero.rates} dungeons={dungeons ?? []} />
+            {dungeonsLoading && <p className="text-muted">Carregando…</p>}
+            {dungeonsError && <p className="text-muted">Erro ao carregar modos.</p>}
+            {!dungeonsLoading && !dungeonsError && (
+              <HeroContentRanks rates={hero.rates} dungeons={dungeons ?? []} />
+            )}
           </section>
 
           <section>

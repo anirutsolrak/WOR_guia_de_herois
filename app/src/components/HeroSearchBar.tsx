@@ -24,11 +24,15 @@ export function HeroSearchBar() {
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (!open) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      if (dismissed) { setDismissed(false); return; }
+      if (!open) return;
       setActive((a) => Math.min(a + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
+      return;
+    }
+    if (!open) return;
+    if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActive((a) => Math.max(a - 1, 0));
     } else if (e.key === 'Enter') {
@@ -58,6 +62,7 @@ export function HeroSearchBar() {
           value={q}
           onChange={(e) => { setQ(e.target.value); setActive(-1); setDismissed(false); }}
           onKeyDown={onKeyDown}
+          onFocus={() => setDismissed(false)}
           onBlur={() => setDismissed(true)}
           className="w-full bg-transparent text-fg placeholder:text-subtle focus:outline-none"
         />

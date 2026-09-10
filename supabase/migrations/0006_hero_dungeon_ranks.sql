@@ -1,4 +1,5 @@
-create or replace view hero_dungeon_ranks as
+create or replace view hero_dungeon_ranks
+with (security_invoker = on) as
 select
   hero_id,
   dungeon_id,

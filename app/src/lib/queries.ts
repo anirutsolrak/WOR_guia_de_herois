@@ -69,6 +69,13 @@ export async function getHeroDetail(sb: SupabaseClient, heroId: number): Promise
     sb.from('hero_videos').select('videos').eq('hero_id', heroId).single(),
   ]);
   if (hero.error) throw hero.error;
+  const others: [string, { error: any }][] = [
+    ['hero_labels', labels], ['hero_dungeon_ranks', rates], ['hero_gear', gear],
+    ['hero_artifacts', artifacts], ['hero_lineups', lineups], ['hero_videos', videos],
+  ];
+  for (const [relation, result] of others) {
+    if (result.error) console.warn(`getHeroDetail: falha ao ler ${relation}`, result.error);
+  }
   return assembleHeroDetail({
     hero: hero.data, labels: labels.data, rates: rates.data,
     gear: gear.data, artifacts: artifacts.data, lineups: lineups.data, videos: videos.data,

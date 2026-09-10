@@ -75,8 +75,9 @@ from hero_dungeon_rates;
 ```
 
 Mais o `grant select` para os papéis `anon`/`authenticated`, no mesmo padrão de
-`0003_read_policies.sql`. A view herda o RLS de `hero_dungeon_rates`; não há dado privado
-envolvido — todas as tabelas do guia já são de leitura pública.
+`0003_read_policies.sql`. A view é criada com `security_invoker = on`, então ela avalia o RLS
+de `hero_dungeon_rates` com o papel de quem consulta, em vez do dono da view; não há dado
+privado envolvido — todas as tabelas do guia já são de leitura pública.
 
 `rank()` (não `dense_rank()`) é o correto aqui: em empate de `rate`, dois heróis dividem a
 mesma posição e a seguinte é pulada, que é como um ranking de jogo se comporta.

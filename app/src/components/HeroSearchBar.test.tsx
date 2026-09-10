@@ -76,6 +76,24 @@ describe('HeroSearchBar', () => {
     expect(input).toHaveValue('lu');
   });
 
+  it('perder o foco fecha a lista e focar de novo reabre', () => {
+    const input = renderBar();
+    fireEvent.change(input, { target: { value: 'lu' } });
+    fireEvent.blur(input);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    fireEvent.focus(input);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
+  it('seta para baixo reabre a lista depois do Esc', () => {
+    const input = renderBar();
+    fireEvent.change(input, { target: { value: 'lu' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(screen.queryByRole('listbox')).toBeNull();
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
   it('clicar numa opção navega e limpa o campo', () => {
     const input = renderBar();
     fireEvent.change(input, { target: { value: 'lu' } });
