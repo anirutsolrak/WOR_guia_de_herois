@@ -1,12 +1,14 @@
 -- Sincronização automática de heróis.
 --
--- PRÉ-REQUISITO MANUAL, uma única vez, antes de aplicar esta migration:
--- guardar a service role key no Vault. Ela NÃO pode entrar neste arquivo,
--- porque este repositório é público.
+-- PRÉ-REQUISITO, uma única vez, antes de aplicar esta migration:
 --
---   select vault.create_secret('<SERVICE_ROLE_KEY>', 'scraper_service_key');
+--   select vault.create_secret('<ANON_KEY>', 'scraper_invoke_key');
 --
--- A chave está em Dashboard > Project Settings > API > service_role.
+-- Por que a chave ANON e não a service_role: o gateway das Edge Functions exige
+-- apenas um JWT válido do projeto, e quem escreve no banco é a própria função,
+-- com a SUPABASE_SERVICE_ROLE_KEY do ambiente dela. O job não usa privilégio
+-- nenhum do chamador, então recebe o mínimo. A chave fica no Vault, e não neste
+-- arquivo, porque o repositório é público.
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
@@ -15,9 +17,9 @@ create extension if not exists pg_net;
 -- receber 401 em silêncio, com o sintoma aparecendo só como "nada é importado".
 do $$
 begin
-  if not exists (select 1 from vault.decrypted_secrets where name = 'scraper_service_key') then
+  if not exists (select 1 from vault.decrypted_secrets where name = 'scraper_invoke_key') then
     raise exception
-      'Segredo scraper_service_key ausente no Vault. Rode: select vault.create_secret(''<SERVICE_ROLE_KEY>'', ''scraper_service_key'');';
+      'Segredo scraper_invoke_key ausente no Vault. Rode: select vault.create_secret(''<ANON_KEY>'', ''scraper_invoke_key'');';
   end if;
 end $$;
 
@@ -38,7 +40,7 @@ select cron.schedule(
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || (
-        select decrypted_secret from vault.decrypted_secrets where name = 'scraper_service_key'
+        select decrypted_secret from vault.decrypted_secrets where name = 'scraper_invoke_key'
       )
     ),
     timeout_milliseconds := 120000
