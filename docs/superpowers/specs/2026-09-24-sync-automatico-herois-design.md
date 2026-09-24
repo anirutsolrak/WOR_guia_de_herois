@@ -32,7 +32,7 @@ função **nunca é chamada em lugar nenhum**. A peça existe; nada a usa.
 | Escopo por execução | Faltantes primeiro; depois os obsoletos há mais de 7 dias |
 | Lote | `limit` por chamada, padrão 5 |
 | Agendamento | `pg_cron` + `pg_net` dentro do Supabase, a cada 15 minutos |
-| Segredo | Service role key no **Vault**, referenciada por nome na migration |
+| Segredo | Chave **anon** no Vault (privilégio mínimo: o job não usa privilégio do chamador) |
 | Obsolescência | `heroes.updated_at`, que `upsert_hero` já atualiza a cada gravação |
 
 ## Por que lotes, e não uma varredura única
@@ -100,7 +100,7 @@ invocação por timeout.
 - `create extension if not exists pg_cron;` e `pg_net`.
 - Job `sync-herois-15min`: `select cron.schedule(...)` chamando
   `net.http_post` contra `.../functions/v1/scraper?mode=sync&limit=5`.
-- A service role key vem de `vault.decrypted_secrets`, nunca literal no arquivo.
+- A chave de invocação vem de `vault.decrypted_secrets`, nunca literal no arquivo.
 - A migration é idempotente: `cron.unschedule` do job homônimo antes de agendar.
 
 ## Não-objetivos
