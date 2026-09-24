@@ -48,7 +48,7 @@ duas primeiras rodadas, ou seja, em cerca de meia hora.
 
 ## Mudanças
 
-### `transform.ts` — a fila de trabalho (função pura)
+### `sync.ts` — a fila de trabalho (função pura, arquivo novo)
 
 ```ts
 export interface SyncItem { id: number; motivo: 'faltante' | 'obsoleto' }
@@ -72,7 +72,9 @@ Regras, nesta ordem:
 4. IDs que existem no banco mas não na API são ignorados — nunca apagamos nada.
 5. `updated_at` nulo conta como obsoleto.
 
-É pura e sem I/O, então é testável como o resto de `transform.ts`.
+Vive em arquivo próprio, e não em `transform.ts`: montar fila de trabalho é outra
+responsabilidade que interpretar payload de herói, e a separação mantém os dois
+testáveis isoladamente. É pura e sem I/O, testada como o resto do scraper.
 
 ### `index.ts` — o modo `sync`
 
